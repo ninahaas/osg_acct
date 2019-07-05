@@ -39,14 +39,14 @@ res = es.search(index=osg_raw_index,body={
 			{
 				'range': {
 					'StartTime': {
-						'gte': '2019-06-03',
-						'lte': '2019-06-09'
+						'gte': '2019-06-06',
+						'lte': '2019-06-14'
 					}
 				},
 				'range': {
 					'EndTime':{
-						'gte': '2019-06-03',
-                                        	'lte': '2019-06-09'
+						'gte': '2019-06-06',
+                                        	'lte': '2019-06-14'
 					}
 				}
 			}
@@ -99,8 +99,7 @@ pp = pprint.PrettyPrinter(indent=4)
 threshold = datetime.timedelta(minutes=2)
 matchedPL = idleTime = totalWallTime = 0.0
 
-#match payloads to batches by startTime threshold
-#need to add second phase for payload chains that begin in the middle of batches
+#PHASE1: match payloads to batches by startTime difference threshold
 for batch in sBatches:
 	currentST = batch['ST']
 	totalWallTime += batch['WallDuration']
@@ -114,6 +113,30 @@ for batch in sBatches:
 				payload['isActive'] = False
 				matchedPL += 1
 				idleTime = idleTime - payload['WallDuration']
+
+#PHASE2: match remaining payloads that start longer after the batch StartTime
+threshold2 = datetime.timedelta(minutes= 10)
+for batch in sBatches:
+        currentST = batch['ST']
+        for payload in sPayloads:
+                if payload['isActive']:
+			if currentST == batch['ST']:	
+				if payload['ST'] - currentST <= threshold2 and payload['ET'] <= batch['ET'] and payload['ST'] >= currentST:
+					batch['payloads'].append(payload['LocalJobId'])
+                               		payload['batch'] = batch['LocalJobId']
+                               		currentST = payload['ET']
+                                	payload['isActive'] = False
+                                	matchedPL += 1
+                                	idleTime = idleTime - payload['WallDuration']
+			else:
+                        	if payload['ST'] - currentST <= threshold and payload['ET'] <= batch['ET'] and payload['ST'] >= currentST:
+                                	batch['payloads'].append(payload['LocalJobId'])
+                                	payload['batch'] = batch['LocalJobId']
+                                	currentST = payload['ET']
+                                	payload['isActive'] = False
+                                	matchedPL += 1
+                                	idleTime = idleTime - payload['WallDuration']
+	
 percPL = 100*matchedPL/len(sPayloads)
 percWT = 100*idleTime/totalWallTime
 
