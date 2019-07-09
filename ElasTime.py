@@ -24,8 +24,8 @@ r = Bool(
 	must=[Range(StartTime = {'gte': '2019-06-09','lte': '2019-06-15'}),
 		Range(EndTime = {'gte': '2019-06-09','lte': '2019-06-15'}) ] )
 
-sB = Search(using=es, index=osg_summary_index)
-sP = Search(using=es, index=osg_summary_index)
+sB = Search(using=es, index=osg_raw_index)
+sP = Search(using=es, index=osg_raw_index)
 sB = sB.query(qB).query(qVO).query(r).query(rtB)
 sP = sP.query(qP).query(qVO).query(r).query(rtP)
 resB = sB.execute()
