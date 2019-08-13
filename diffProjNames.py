@@ -49,5 +49,7 @@ for project in GRACCpn:
 
 #print sorted(pnNotIncluded)
 
+### find projects in GRACC not in topology
+
 for project in sorted(pnNotIncluded):
 	print project
