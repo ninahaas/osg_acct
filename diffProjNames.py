@@ -13,9 +13,9 @@ from os.path import isfile, join, splitext
 mypath = "/home/users/nhaas/osgclone/topology/projects"
 files = [f for f in listdir(mypath) if isfile(join(mypath, f))]
 
-OSGpn = list()
+OSGpn = set()
 for name in files:
-	OSGpn.append(splitext(name)[0].lower())
+	OSGpn.add(splitext(name)[0].lower())
 print OSGpn
 
 ### projects in elasticsearch
