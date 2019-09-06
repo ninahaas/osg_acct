@@ -28,7 +28,7 @@ osg_raw_index = 'gracc.osg.raw-*'
 osg_summary_index = 'gracc.osg.summary'
 
 r = Bool(
-        must=[  Range(EndTime = {'gte': '2019-07-12','lte': '2019-08-12'}) ] )
+        must=[  Range(EndTime = {'gte': '2019-07-26','lte': '2019-08-26'}) ] )
 
 rtP = Q('bool', must=[Q('match', ResourceType = "Payload")])
 

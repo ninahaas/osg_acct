@@ -27,7 +27,7 @@ osg_raw_index = 'gracc.osg.raw-*'
 osg_summary_index = 'gracc.osg.summary'
 
 r = Bool(
-        must=[  Range(EndTime = {'gte': '2019-06-12','lte': '2019-08-12'}) ] )
+        must=[  Range(EndTime = {'gte': '2019-02-28','lte': '2019-08-28'}) ] )
 
 rtP = Q('bool', must=[Q('match', ResourceType = "Payload")])
 
@@ -35,9 +35,16 @@ s = Search(using=es, index=osg_summary_index)
 s = s.query(rtP).query(r)
 
 GRACCpn = dict()
-pnNotIncluded = list()
+pnNotIncluded = dict()
 for hit in s.scan():
-	GRACCpn[str(hit.ProjectName).strip()] = 1
+	project = str(hit.ProjectName).strip()
+	probe = str(hit.ProbeName).strip()
+	if project not in GRACCpn:
+		GRACCpn[project] = {probe}
+	else:
+		GRACCpn[project].add(probe)
+
+#	GRACCpn[(str(hit.ProjectName).strip(),str(hit.ProbeName).strip())] = 1
 #	if str(hit.ProjectName).strip() not in GRACCpn:
 #		GRACCpn[str(hit.ProjectName).strip()] = 1
 #	else:
@@ -45,11 +52,17 @@ for hit in s.scan():
 
 for project in GRACCpn:
 	if project.lower() not in OSGpn:
-		pnNotIncluded.append(project)
+		pnNotIncluded[project] = GRACCpn[project]
 
 #print sorted(pnNotIncluded)
 
 ### find projects in GRACC not in topology
 
 for project in sorted(pnNotIncluded):
-	print project
+	print project + ":	" + str(list(pnNotIncluded[project]))
+
+with open('unregisteredProjNames_6m.csv', 'wb') as writeFile:
+	writeFile.write("ProjectName,ProbeName\n")
+	for key in sorted(pnNotIncluded):
+		writeFile.write(key + ",")
+		writeFile.write([str(list(pnNotIncluded[key]))]+"\n")
